@@ -1,8 +1,9 @@
-export class CreateUserDto {
+export class FilterUserDto {
     firstname: string;
     lastname: string;
     phone: string;
     email: string;
     company_name: string;
-    roles: string[]
+    key: string;
+    blocked: boolean;
 }
