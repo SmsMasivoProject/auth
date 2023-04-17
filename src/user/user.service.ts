@@ -25,15 +25,15 @@ export class UserService {
     return (await this.userModel.find(query).exec()).map(this.allUsers)
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<OneUserDto> {
     return this.oneUser((await this.userModel.findById(id).exec()))
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<OneUserDto> {
+    return await this.userModel.findOneAndUpdate({_id: id}, updateUserDto)
   }
 
-  async remove(id: string): Promise<User> {
+  async remove(id: string): Promise<OneUserDto> {
     return await this.userModel.findByIdAndDelete(id)
   }
 

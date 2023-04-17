@@ -41,8 +41,19 @@ export class UserController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+    this.userService.update(id, updateUserDto).then(
+      (data) => {
+        if (data)
+          res.status(HttpStatus.NO_CONTENT).send()
+        else
+          res.status(HttpStatus.NOT_FOUND).send()
+      }
+    ).catch(
+      (err) => {
+        res.status(HttpStatus.BAD_REQUEST).send(err)
+      }
+    )
   }
 
   @Delete(':id')
