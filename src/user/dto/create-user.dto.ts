@@ -5,4 +5,8 @@ export class CreateUserDto {
     email: string;
     company_name: string;
     roles: string[]
+    refreshToken: string
+    secret: string
+    key: string;
+    blocked: boolean;
 }

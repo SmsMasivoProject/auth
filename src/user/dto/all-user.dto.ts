@@ -6,5 +6,7 @@ export class AllUserDto {
     email: string;
     company_name: string;
     key: string;
-    roles: string[]
+    secret: string;
+    roles: string[];
+    refreshToken: string;
 }

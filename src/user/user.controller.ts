@@ -4,17 +4,21 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { Response } from 'express'
+import { Roles } from './decorators/roles.decorator';
+import { Role } from './dto/role.enum';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
   @Post()
+  @Roles(Role.Admin, Role.SuperAdmin)
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Get()
+  @Roles(Role.Admin, Role.SuperAdmin)
   findAll(@Query() query: FilterUserDto, @Res() res: Response) {
     this.userService.findAll(query).then(
       (data) => {
@@ -28,6 +32,7 @@ export class UserController {
   }
 
   @Get(':id')
+  @Roles(Role.Admin, Role.SuperAdmin)
   findOne(@Param('id') id: string, @Res() res: Response) {
     this.userService.findOne(id).then(
       (data) => {
@@ -41,6 +46,7 @@ export class UserController {
   }
 
   @Patch(':id')
+  @Roles(Role.Admin, Role.SuperAdmin)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
     this.userService.update(id, updateUserDto).then(
       (data) => {
@@ -57,6 +63,7 @@ export class UserController {
   }
 
   @Delete(':id')
+  @Roles(Role.Admin, Role.SuperAdmin)
   remove(@Param('id') id: string, @Res() res: Response) {
     this.userService.remove(id).then(
       (data) => {

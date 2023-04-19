@@ -54,9 +54,10 @@ export class User {
     
       @Prop({
         type: String,
-        minlength: 3,
+        minlength: 0,
         maxlength: 255,
         required: false,
+        default: "",
       })
       refreshToken: string;
     
