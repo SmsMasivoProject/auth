@@ -6,4 +6,5 @@ export class FilterUserDto {
     company_name: string;
     key: string;
     blocked: boolean;
+    username: string;
 }

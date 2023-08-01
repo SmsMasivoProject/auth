@@ -9,4 +9,6 @@ export class CreateUserDto {
     secret: string
     key: string;
     blocked: boolean;
+    username: string;
+    password: string;
 }

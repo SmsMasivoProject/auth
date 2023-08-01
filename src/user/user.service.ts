@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, HttpException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AllUserDto } from './dto/all-user.dto';
@@ -11,57 +16,59 @@ import { OneUserDto } from './dto/one-user.dto';
 import { CreateUserSchema } from './validators/create.validator';
 import { UpdateUserSchema } from './validators/update.validator';
 import { JwtService } from '@nestjs/jwt';
+import { decryp, encryp } from 'src/utils/crypto.functions';
 
 @Injectable()
 export class UserService {
-
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const result = CreateUserSchema.validate(createUserDto)
-    if (result.error)
-      throw new BadRequestException(result.error.details)
-    const createdUser = new this.userModel(result.value)
-    createdUser.key = randomUUID()
-    createdUser.secret = randomUUID()
-    return createdUser.save()
+  async create(createUserDto: CreateUserDto): Promise<OneUserDto> {
+    createUserDto.password = await encryp(createUserDto.password);
+    const result = CreateUserSchema.validate(createUserDto);
+    if (result.error) throw new BadRequestException(result.error.details);
+    const createdUser = new this.userModel(result.value);
+    createdUser.key = randomUUID();
+    createdUser.secret = randomUUID();
+    let user = await createdUser.save();
+    return this.oneUser(user);
   }
 
   async findAll(query: QueryOptions<FilterUserDto>): Promise<AllUserDto[]> {
-    return (await this.userModel.find(query).exec()).map(this.allUsers)
+    return (await this.userModel.find(query).exec()).map(this.allUsers);
   }
 
   async findOne(id: string): Promise<OneUserDto> {
-    return this.oneUser((await this.userModel.findById(id).exec()))
+    return this.oneUser(await this.userModel.findById(id).exec());
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<OneUserDto> {
-    const result = UpdateUserSchema.validate(updateUserDto)
-    if (result.error)
-      throw new BadRequestException(result.error)
-    return await this.userModel.findOneAndUpdate({ _id: id }, result.value)
+    const result = UpdateUserSchema.validate(updateUserDto);
+    if (result.error) throw new BadRequestException(result.error);
+    return await this.userModel.findOneAndUpdate({ _id: id }, result.value);
   }
 
   async remove(id: string): Promise<OneUserDto> {
-    return await this.userModel.findByIdAndDelete(id)
+    return await this.userModel.findByIdAndDelete(id);
   }
 
   // adapters
-  allUsers = (payload: any) => <AllUserDto>({
-    _id: payload._id,
-    firstname: payload.firstname,
-    lastname: payload.lastname,
-    phone: payload.phone,
-    email: payload.email,
-    company_name: payload.company_name,
-    key: payload.key,
-    secret: payload.secret,
-    roles: payload.roles,
-    refreshToken: payload.refreshToken,
-  })
+  allUsers = (payload: any) =>
+    <AllUserDto>{
+      _id: payload._id,
+      firstname: payload.firstname,
+      lastname: payload.lastname,
+      phone: payload.phone,
+      email: payload.email,
+      company_name: payload.company_name,
+      key: payload.key,
+      secret: payload.secret,
+      roles: payload.roles,
+      username: payload.username,
+      refreshToken: payload.refreshToken,
+    };
   oneUser = (payload: any): OneUserDto => {
     return {
       _id: payload._id,
@@ -74,12 +81,13 @@ export class UserService {
       roles: payload.roles,
       secret: payload.secret,
       refreshToken: '',
+      username: payload.username,
       createdAt: payload.createdAt,
       updatedAt: payload.updatedAt,
-    }
-  }
+    };
+  };
 
-  // Auth 
+  // Auth
   async validateUser(key: string, secret: string): Promise<any> {
     let users = await this.findAll({ key: key });
     let user = users[0];
@@ -99,7 +107,7 @@ export class UserService {
   async logout(token: string) {
     let key = this.jwtService.decode(token)['key'];
     let user = (await this.findAll({ key: key }))[0];
-    return await this.update(user._id, { refreshToken: "" });
+    return await this.update(user._id, { refreshToken: '' });
   }
 
   async refreshTokens(key: string, refreshToken: string) {
@@ -139,7 +147,7 @@ export class UserService {
   }
 
   async updateRefreshToken(key: string, refreshToken: string) {
-    let user = await this.getUserRefreshToken(key)
-    await this.update(String(user._id), { 'refreshToken': refreshToken });
+    let user = await this.getUserRefreshToken(key);
+    await this.update(String(user._id), { refreshToken: refreshToken });
   }
 }

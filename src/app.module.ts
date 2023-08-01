@@ -16,7 +16,7 @@ const jwtFactory = {
         expiresIn: process.env.JWT_SECRET_KEY_EXPIRES,
       },
     };
-  }
+  },
 };
 @Module({
   imports: [
@@ -24,17 +24,20 @@ const jwtFactory = {
     MongooseModule.forRoot(
       `mongodb://${process.env.HOSTNAME_MONGO}:${process.env.PORT_MONGO}`,
       {
-        dbName: `${process.env.DATABASE_MONGO}`
-      }
+        dbName: `${process.env.DATABASE_MONGO}`,
+      },
     ),
     JwtModule.registerAsync(jwtFactory),
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService, {
-    provide: APP_GUARD,
-    useClass: RolesGuard,
-  },],
-  exports: [AppService]
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
+  exports: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
